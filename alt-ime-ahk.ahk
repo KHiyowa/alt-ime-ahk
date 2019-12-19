@@ -126,3 +126,6 @@ RAlt up::
         IME_SET(1)
     }
     Return
+
+sc05A::IME_SET(0)
+sc05B::IME_SET(1)
