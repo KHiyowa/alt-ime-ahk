@@ -108,9 +108,25 @@
     Return
 
 ; 上部メニューがアクティブになるのを抑制
-*~LAlt::Send {Blind}{vk07}
-*~RAlt::Send {Blind}{vk07}
+; ただし、200ms以内の2回押し時は抑制しない
+*~LAlt::
+    If ( A_PriorHotKey == "LAlt up" and 200 > A_TimeSincePriorHotkey )
+    {
+        Send {Blind}{Alt}
+    } else {
+        Send {Blind}{vkFF down}{vkFF up}
+    }
+    Return  
 
+*~RAlt::
+    If ( A_PriorHotKey == "RAlt up" and 200 > A_TimeSincePriorHotkey )
+    {
+        Send {Blind}{Alt}
+    } else {
+        Send {Blind}{vkFF down}{vkFF up}
+    }
+    Return
+ 
 ; 左 Alt 空打ちで IME を OFF
 LAlt up::
     if (A_PriorHotkey == "*~LAlt")
@@ -126,3 +142,6 @@ RAlt up::
         IME_SET(1)
     }
     Return
+
+sc07B::IME_SET(0)
+sc079::IME_SET(1)
