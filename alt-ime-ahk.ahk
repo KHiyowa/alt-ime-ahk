@@ -114,7 +114,7 @@
     {
         Send {Blind}{Alt}
     } else {
-        Send {Blind}{vkFF down}{vkFF up}
+        Send {Blind}{vkFF up}
     }
     Return  
 
@@ -123,10 +123,10 @@
     {
         Send {Blind}{Alt}
     } else {
-        Send {Blind}{vkFF down}{vkFF up}
+        Send {Blind}{vkFF up}
     }
     Return
- 
+
 ; 左 Alt 空打ちで IME を OFF
 LAlt up::
     if (A_PriorHotkey == "*~LAlt")
