@@ -114,7 +114,7 @@
     {
         Send {Blind}{Alt}
     } else {
-        Send {Blind}{vkFF up}
+        Send {Blind}{vk7F up}
     }
     Return  
 
@@ -123,7 +123,7 @@
     {
         Send {Blind}{Alt}
     } else {
-        Send {Blind}{vkFF up}
+        Send {Blind}{vk7F up}
     }
     Return
 
