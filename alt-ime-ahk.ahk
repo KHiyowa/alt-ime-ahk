@@ -1,147 +1,91 @@
-; 左右 Alt キーの空打ちで IME の OFF/ON を切り替える
+; ----------------------------------------------------------------------
+; Alt-IME (Key Hook / A_PriorKey 版) - AutoHotkey v2.0
 ;
-; 左 Alt キーの空打ちで IME を「英数」に切り替え
-; 右 Alt キーの空打ちで IME を「かな」に切り替え
-; Alt キーを押している間に他のキーを打つと通常の Alt キーとして動作
+; Author:       Hiyowa Kyobashi  https://github.com/KHiyowa/alt-ime-ahk
 ;
-; Author:     karakaram   http://www.karakaram.com/alt-ime-on-off
+; Acknowledge:
+;   Original Author: Yosuke Karasawa  https://github.com/karakaram/alt-ime-ahk
+; ----------------------------------------------------------------------
+;@Ahk2Exe-SetCompanyName Hiyowa Records
+;@Ahk2Exe-SetCopyright Hiyowa Kyobashi
+;@Ahk2Exe-SetDescription Alt-IME
+;@Ahk2Exe-SetFileVersion 2.0.0
+;@Ahk2Exe-SetInternalName Alt-IME
+;@Ahk2Exe-SetOrigFilename alt-ime-ahk.exe
+;@Ahk2Exe-SetProductName Alt-IME
+;@Ahk2Exe-SetProductVersion 2.0.0
+;@Ahk2Exe-SetMainIcon alt-ime.ico
 
-#Include IME.ahk
+#Requires AutoHotkey v2.0
+#SingleInstance Force
+SetStoreCapsLockMode False
+A_IconTip := "Alt-IME"
 
-; Razer Synapseなど、キーカスタマイズ系のツールを併用しているときのエラー対策
-#MaxHotkeysPerInterval 350
+A_MenuMaskKey := "vkE8"     ; Alt単体押し時のメニュー呼び出しを抑制するためのダミーキー
 
-; 主要なキーを HotKey に設定し、何もせずパススルーする
-*~a::
-*~b::
-*~c::
-*~d::
-*~e::
-*~f::
-*~g::
-*~h::
-*~i::
-*~j::
-*~k::
-*~l::
-*~m::
-*~n::
-*~o::
-*~p::
-*~q::
-*~r::
-*~s::
-*~t::
-*~u::
-*~v::
-*~w::
-*~x::
-*~y::
-*~z::
-*~1::
-*~2::
-*~3::
-*~4::
-*~5::
-*~6::
-*~7::
-*~8::
-*~9::
-*~0::
-*~F1::
-*~F2::
-*~F3::
-*~F4::
-*~F5::
-*~F6::
-*~F7::
-*~F8::
-*~F9::
-*~F10::
-*~F11::
-*~F12::
-*~`::
-*~~::
-*~!::
-*~@::
-*~#::
-*~$::
-*~%::
-*~^::
-*~&::
-*~*::
-*~(::
-*~)::
-*~-::
-*~_::
-*~=::
-*~+::
-*~[::
-*~{::
-*~]::
-*~}::
-*~\::
-*~|::
-*~;::
-*~'::
-*~"::
-*~,::
-*~<::
-*~.::
-*~>::
-*~/::
-*~?::
-*~Esc::
-*~Tab::
-*~Space::
-*~Left::
-*~Right::
-*~Up::
-*~Down::
-*~Enter::
-*~PrintScreen::
-*~Delete::
-*~Home::
-*~End::
-*~PgUp::
-*~PgDn::
-    Return
+; グローバル変数の初期化
+g_LastLAltPress := 0
+g_LAltDouble := false
+g_LastRAltPress := 0
+g_RAltDouble := false
 
-; 上部メニューがアクティブになるのを抑制
-; ただし、200ms以内の2回押し時は抑制しない
-*~LAlt::
-    If ( A_PriorHotKey == "LAlt up" and 200 > A_TimeSincePriorHotkey )
-    {
-        Send {Blind}{Alt}
+; ----------------------------------------------------------------------
+; 左 Alt キー (無変換キー)
+; ----------------------------------------------------------------------
+; $*~LAlt
+;   $ : キーフックを使用する
+;   * : 修飾キー(Ctrl等)が押されていても発火する
+;   ~ : 元のキー入力もOSに送る（ショートカットキー等を妨害しない）
+; ----------------------------------------------------------------------
+$~LAlt::
+$+~LAlt:: {
+    global g_LAltDouble, g_LastLAltPress
+    if (A_TickCount - g_LastLAltPress < 200) {
+        g_LAltDouble := true
     } else {
-        Send {Blind}{vk7F up}
+        g_LAltDouble := false
+        SendInput "{Blind}{vkE8}"
     }
-    Return  
+    g_LastLAltPress := A_TickCount
+}
 
-*~RAlt::
-    If ( A_PriorHotKey == "RAlt up" and 200 > A_TimeSincePriorHotkey )
-    {
-        Send {Blind}{Alt}
+$~LAlt up::
+$+~LAlt up:: {
+    global g_LAltDouble
+    ; A_PriorKey は「直前に押された物理キー」を保持する。
+    ; これが "LAlt" である場合、Altキーを押している間に他のキーを押さなかったことを意味する。
+    if ((A_PriorKey == "LAlt" || A_PriorKey == "vkE8") && !g_LAltDouble) {
+        SendInput "{Blind}{vk1D}"
+    }
+}
+
+; ----------------------------------------------------------------------
+; 右 Alt キー (変換キー)
+; ----------------------------------------------------------------------
+$~RAlt::
+$+~RAlt:: {
+    global g_RAltDouble, g_LastRAltPress
+    if (A_TickCount - g_LastRAltPress < 200) {
+        g_RAltDouble := true
     } else {
-        Send {Blind}{vk7F up}
+        g_RAltDouble := false
+        SendInput "{Blind}{vkE8}"
     }
-    Return
+    g_LastRAltPress := A_TickCount
+}
 
-; 左 Alt 空打ちで IME を OFF
-LAlt up::
-    if (A_PriorHotkey == "*~LAlt")
-    {
-        IME_SET(0)
+$~RAlt up::
+$+~RAlt up:: {
+    global g_RAltDouble
+    if ((A_PriorKey == "RAlt" || A_PriorKey == "vkE8") && !g_RAltDouble) {
+        SendInput "{Blind}{vk1C}"
     }
-    Return
+}
 
-; 右 Alt 空打ちで IME を ON
-RAlt up::
-    if (A_PriorHotkey == "*~RAlt")
-    {
-        IME_SET(1)
-    }
-    Return
-
-sc07B::IME_SET(0)
-sc079::IME_SET(1)
+; ----------------------------------------------------------------------
+; 大宮技研 英数・かなキーボード用仮想コード
+; sc07B (無変換) -> 無変換
+; sc079 (変換)   -> 変換
+; ----------------------------------------------------------------------
+*sc07B::SendInput "{Blind}{vk1D}"
+*sc079::SendInput "{Blind}{vk1C}"
